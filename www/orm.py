@@ -14,8 +14,8 @@ async def create_pool(loop, **kw):
     __pool = await aiomysql.create_pool(
         host=kw.get('host', 'localhost'),
         port=kw.get('port', 3306),
-        user=kw['user'],
-        password=kw['password'],
+        user=kw['root'],  #根据你自己设置的user的名字，我设置的是root
+        password=kw['passwordabc'], #我这里设置的password是 passwordabc
         db=kw['test'],
         charset=kw.get('charset', 'utf8'),
         autocommit=kw.get('autocommit', True),
@@ -112,6 +112,7 @@ class ModelMetaclass(type):
                 mappings[k] = v
                 if v.primary_key:
                     # 找到主键:
+                    # 找到主键:
                     if primaryKey:
                         raise BaseException('Duplicate primary key for field: %s' % k)
                     primaryKey = k
@@ -183,9 +184,9 @@ class Model(dict, metaclass=ModelMetaclass):
                 args.extend(limit)
             else:
                 raise ValueError('Invalid limit value: %s' % str(limit))
-        # rs = await select(' '.join(sql), args)
-        # return [cls(**r) for r in rs]
-        return[{'name':'lucy','email':'123@qq.com'}]
+        rs = await select(' '.join(sql), args)
+        return [cls(**r) for r in rs]
+        # return[{'name':'lucy','email':'123@qq.com','passwd':'123456'}]  #在没有连接数据前，mock假数据使用
 
     @classmethod
     async def findNumber(cls, selectField, where=None, args=None):
