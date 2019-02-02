@@ -5,6 +5,7 @@ from datetime import datetime
 from www.handlers import cookie2user, COOKIE_NAME
 from aiohttp import web
 from www.coroweb import add_routes, add_static
+from www.orm import create_pool
 
 from jinja2 import Environment, FileSystemLoader
 def init_jinja2(app, **kw):
@@ -118,7 +119,7 @@ def datetime_filter(t):
 
 
 async def init(loop):
-
+    await create_pool(loop=loop, host='127.0.0.1', port=3306, user='root', password='passwordabc', db='users')
     app = web.Application(loop=loop, middlewares=[
         logger_factory, response_factory    #response_factory指定返回类型
     ])

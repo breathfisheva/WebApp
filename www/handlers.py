@@ -74,21 +74,21 @@ def signin():
     }
 
 @post('/api/authenticate')
-def authenticate(*, email, passwd):
+async def authenticate(*, email, passwd):
     if not email:
         raise APIValueError('email', 'Invalid email.')
     if not passwd:
         raise APIValueError('passwd', 'Invalid password.')
-    users = yield from User.findAll('email=?', [email])
+    users = await User.findAll('email=?', [email])
     if len(users) == 0:
         raise APIValueError('email', 'Email not exist.')
     user = users[0]
     # check passwd:
     sha1 = hashlib.sha1()
-    sha1.update(user.id.encode('utf-8'))
+    sha1.update(user.email.encode('utf-8'))
     sha1.update(b':')
-    sha1.update(passwd.encode('utf-8'))
-    if user.passwd != sha1.hexdigest():
+    sha1.update(user.passwd.encode('utf-8')) #需要加密的是数据库的password，也就是user.passwd
+    if passwd != sha1.hexdigest():  #把数据库的password加密后和浏览器cookie里的passwd对比
         raise APIValueError('passwd', 'Invalid password.')
     # authenticate ok, set cookie:
     r = web.Response()

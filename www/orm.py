@@ -5,6 +5,7 @@ import asyncio, logging
 
 import aiomysql
 
+
 def log(sql, args=()):
     logging.info('SQL: %s' % sql)
 
@@ -14,9 +15,9 @@ async def create_pool(loop, **kw):
     __pool = await aiomysql.create_pool(
         host=kw.get('host', 'localhost'),
         port=kw.get('port', 3306),
-        user=kw['root'],  #根据你自己设置的user的名字，我设置的是root
-        password=kw['passwordabc'], #我这里设置的password是 passwordabc
-        db=kw['test'],
+        user=kw['user'],  #根据你自己设置的user的名字，我设置的是root
+        password=kw['password'], #我这里设置的password是 passwordabc
+        db=kw['db'],
         charset=kw.get('charset', 'utf8'),
         autocommit=kw.get('autocommit', True),
         maxsize=kw.get('maxsize', 10),
@@ -27,13 +28,14 @@ async def create_pool(loop, **kw):
 async def select(sql, args, size=None):
     log(sql, args)
     global __pool
-    async with __pool.get() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cur:
-            await cur.execute(sql.replace('?', '%s'), args or ())
-            if size:
-                rs = await cur.fetchmany(size)
-            else:
-                rs = await cur.fetchall()
+    with (await __pool) as conn:
+        cur = await conn.cursor(aiomysql.DictCursor)
+        await cur.execute(sql.replace('?', '%s'), args or ())
+        if size:
+            rs = await cur.fetchmany(size)
+        else:
+            rs = await cur.fetchall()
+        await cur.close()
         logging.info('rows returned: %s' % len(rs))
         return rs
 
@@ -186,7 +188,7 @@ class Model(dict, metaclass=ModelMetaclass):
                 raise ValueError('Invalid limit value: %s' % str(limit))
         rs = await select(' '.join(sql), args)
         return [cls(**r) for r in rs]
-        # return[{'name':'lucy','email':'123@qq.com','passwd':'123456'}]  #在没有连接数据前，mock假数据使用
+        # return[{'id':'1', 'name':'lucy','email':'123@qq.com','passwd':'123456'}]  #在没有连接数据前，mock假数据使用
 
     @classmethod
     async def findNumber(cls, selectField, where=None, args=None):
