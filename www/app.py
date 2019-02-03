@@ -121,7 +121,7 @@ def datetime_filter(t):
 async def init(loop):
     await create_pool(loop=loop, host='127.0.0.1', port=3306, user='root', password='passwordabc', db='users')
     app = web.Application(loop=loop, middlewares=[
-        logger_factory, response_factory    #response_factory指定返回类型
+        logger_factory, auth_factory, response_factory    #response_factory指定返回类型
     ])
     # app.router.add_route('GET', '/', index) #这个会返回一个文件，所以一打开就会下载，而不是显示网页
     init_jinja2(app, filters=dict(datetime=datetime_filter))
