@@ -15,3 +15,14 @@ a:hover, a:active {
     display: none;
     margin-bottom: 15px;
 }
+
+h2::after {
+    display: block;
+    content: "";
+    border-bottom: 1px solid #ccc;
+}
+
+blockquote {
+    padding-left: 2em;
+    border-left: 5px solid rgba(0,0,0,.3);
+}
